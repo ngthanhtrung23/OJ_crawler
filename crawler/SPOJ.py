@@ -100,6 +100,9 @@ if __name__ == '__main__':
         username = raw_input('Your username: ')
         password = raw_input('Your password: ')
 
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
     login(username, password)
 
     problems = get_solved_problems(username)
