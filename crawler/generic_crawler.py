@@ -27,7 +27,9 @@ class GenericCrawler(object):
 
     @staticmethod
     def store_code(output_dir, problem_code, extension, text):
-        with open(os.path.join(output_dir, problem_code + '.' + extension), 'w') as file_id:
+        if extension is not None:
+            problem_code += '.' + extension
+        with open(os.path.join(output_dir, problem_code), 'w') as file_id:
             file_id.write(text.encode('utf-8'))
 
     def _login(self, data):
@@ -84,7 +86,7 @@ class GenericCrawler(object):
         return None, None
 
     def download_solution(self, output_dir, username, problem_code):
-        submission_id, extension = self.get_accepted_submission_id(self.session, username, problem_code)
+        submission_id, extension = self.get_accepted_submission_id(username, problem_code)
 
         if submission_id is not None:
             code_url = self.code_url.format(id=submission_id)

@@ -18,11 +18,22 @@ class TimusCrawler(GenericCrawler):
             '<tr class="(even|odd).*Accepted',
             '.*<a href="getsubmit\.aspx/(?P<id>[\da-z\.]+)"'
         )
+        self.password = ''
 
-    def login(self, username, password):
-        pass
+    def login(self, _, password):
+        self.password = password
 
+    def download_solution(self, output_dir, username, problem_code):
+        submission_id, _ = self.get_accepted_submission_id(username, problem_code)
+        code_url = self.code_url.format(id=submission_id)
+        request = self.session.post(code_url, data={
+            'Action': 'getsubmit',
+            'JudgeId': username + 'PC',
+            'PASSWORD': self.password
+        })
+        self.store_code(output_dir, problem_code, submission_id[submission_id.find('.')+1:], request.text)
+        print submission_id
 
 if __name__ == '__main__':
-    crawler = TimusCralwer()
+    crawler = TimusCrawler()
     main(crawler, OUTPUT_DIR)
