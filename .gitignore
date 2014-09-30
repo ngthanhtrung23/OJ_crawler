@@ -55,6 +55,8 @@ target/
 
 # IDE
 .idea/
+*.sublime-project
+*.sublime-workspace
 
 # Code folder
 code/

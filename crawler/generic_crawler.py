@@ -7,13 +7,13 @@ class GenericCrawler:
     def __init__(self,
                  base_url, user_profile_url, problem_status_url, code_url,
                  status_regex, accepted_status_regex, submission_id_regex):
-        self.BASE_URL = base_url
-        self.USER_PROFILE_URL = user_profile_url
-        self.PROBLEM_STATUS_URL = problem_status_url
-        self.CODE_URL = code_url
-        self.STATUS_REGEX = status_regex
-        self.ACCEPTED_STATUS_REGEX = accepted_status_regex
-        self.SUBMISSION_ID_REGEX = submission_id_regex
+        self.base_url = base_url
+        self.user_profile_url = user_profile_url
+        self.problem_status_url = problem_status_url
+        self.code_url = code_url
+        self.status_regex = status_regex
+        self.accepted_status_regex = accepted_status_regex
+        self.submission_id_regex = submission_id_regex
 
     @staticmethod
     def get_element_by_selector(session, url, selector):
@@ -26,17 +26,17 @@ class GenericCrawler:
 
     @staticmethod
     def store_code(output_dir, problem_code, extension, text):
-        with open(os.path.join(output_dir, problem_code + '.' + extension), 'w') as f:
-            f.write(text.encode('utf-8'))
+        with open(os.path.join(output_dir, problem_code + '.' + extension), 'w') as file_id:
+            file_id.write(text.encode('utf-8'))
 
     def _login(self, session, data):
-        session.post(self.BASE_URL, data)
+        session.post(self.base_url, data)
 
     def is_accepted(self, text):
-        return re.match(self.ACCEPTED_STATUS_REGEX, text)
+        return re.match(self.accepted_status_regex, text)
 
     def get_solved_problems(self, session, username):
-        profile_url = self.USER_PROFILE_URL.format(username)
+        profile_url = self.user_profile_url.format(username)
         print 'Crawling profile page from url = {}'.format(profile_url)
 
         elements = self.get_element_by_selector(session, profile_url, 'a')
@@ -46,7 +46,7 @@ class GenericCrawler:
         problems_solved = []
         for element in elements:
             text = element.__str__().replace('\n', ' ')
-            pattern = self.STATUS_REGEX.format(username)
+            pattern = self.status_regex.format(username)
             problem_re = re.compile(pattern).match(text)
 
             if problem_re:
@@ -55,7 +55,7 @@ class GenericCrawler:
         return problems_solved
 
     def download_solution(self, session, output_dir, username, problem_code):
-        status_url = self.PROBLEM_STATUS_URL.format(username, problem_code)
+        status_url = self.problem_status_url.format(username, problem_code)
         print 'Find submission ID from {}'.format(status_url)
 
         request = session.get(status_url)
@@ -70,7 +70,7 @@ class GenericCrawler:
             if self.is_accepted(text) is None:
                 continue
 
-            match_pattern = re.match(self.SUBMISSION_ID_REGEX, text)
+            match_pattern = re.match(self.submission_id_regex, text)
 
             extension = 'txt'
             if text.find('JAVA') >= 0:
@@ -84,7 +84,7 @@ class GenericCrawler:
 
             if match_pattern:
                 submission_id = match_pattern.groupdict()['id']
-                code_url = self.CODE_URL.format(submission_id)
+                code_url = self.code_url.format(submission_id)
                 request = session.get(code_url)
                 self.store_code(output_dir, problem_code, extension, request.text)
                 break
