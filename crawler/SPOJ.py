@@ -52,7 +52,11 @@ def main(crawler):
     print '{} has solved {} problems'.format(username, len(problems))
 
     for problem in problems:
-        crawler.download_solution(session, OUTPUT_DIR, username, problem)
+        for extension in ['java', 'cpp', 'py', 'pas']:
+            if os.path.isfile(os.path.join(OUTPUT_DIR, problem + '.' + extension)):
+                break
+        else:
+            crawler.download_solution(session, OUTPUT_DIR, username, problem)
 
 
 if __name__ == '__main__':
