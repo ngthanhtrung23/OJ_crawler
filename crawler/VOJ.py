@@ -10,21 +10,21 @@ OUTPUT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../code/
 BASE_URL = 'https://vn.spoj.com/'
 
 
-class VojCrawler(object, GenericCrawler):
+class VojCrawler(GenericCrawler):
     def __init__(self):
         GenericCrawler.__init__(
             self,
             BASE_URL,
-            BASE_URL + 'users/{}/',
-            BASE_URL + 'status/{},{}/',
-            BASE_URL + 'files/src/save/{}',
-            '<a href="/status/[^,]+,{}/">(?P<id>.+)</a>',
-            '.*(Đạt yêu cầu|Accepted|100)',
+            BASE_URL + 'users/{user}/',
+            BASE_URL + 'status/{problem},{user}/',
+            BASE_URL + 'files/src/save/{id}',
+            '<a href="/status/[^,]+,{user}/">(?P<id>.+)</a>',
+            '<tr class="kol.*(Đạt yêu cầu|accepted|100)',
             '.*href="/files/src/(?P<id>\d+)/'
         )
 
-    def login(self, session, username, password):
-        super(VojCrawler, self)._login(session, data={
+    def login(self, username, password):
+        super(VojCrawler, self)._login(data={
             'login_user': username,
             'password': password
         })
@@ -43,10 +43,9 @@ def main(crawler, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    session = requests.Session()
-    crawler.login(session, username, password)
+    crawler.login(username, password)
 
-    problems = crawler.get_solved_problems(session, username)
+    problems = crawler.get_solved_problems(username)
     print '{} has solved {} problems'.format(username, len(problems))
 
     for problem in problems:
@@ -54,7 +53,7 @@ def main(crawler, output_dir):
             if os.path.isfile(os.path.join(output_dir, problem + '.' + extension)):
                 break
         else:
-            crawler.download_solution(session, output_dir, username, problem)
+            crawler.download_solution(output_dir, username, problem)
 
 
 if __name__ == '__main__':

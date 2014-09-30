@@ -1,9 +1,10 @@
 import os
 import re
 from bs4 import BeautifulSoup
+import requests
 
 
-class GenericCrawler:
+class GenericCrawler(object):
     def __init__(self,
                  base_url, user_profile_url, problem_status_url, code_url,
                  status_regex, accepted_status_regex, submission_id_regex):
@@ -14,10 +15,10 @@ class GenericCrawler:
         self.status_regex = status_regex
         self.accepted_status_regex = accepted_status_regex
         self.submission_id_regex = submission_id_regex
+        self.session = requests.Session()
 
-    @staticmethod
-    def get_element_by_selector(session, url, selector):
-        request = session.get(url)
+    def get_element_by_selector(self, url, selector):
+        request = self.session.get(url)
         if request.status_code != 200:
             print 'Unable to crawl page {}'.format(url)
             return None
@@ -29,24 +30,25 @@ class GenericCrawler:
         with open(os.path.join(output_dir, problem_code + '.' + extension), 'w') as file_id:
             file_id.write(text.encode('utf-8'))
 
-    def _login(self, session, data):
-        session.post(self.base_url, data)
+    def _login(self, data):
+        self.session.post(self.base_url, data)
 
     def is_accepted(self, text):
         return re.match(self.accepted_status_regex, text)
 
-    def get_solved_problems(self, session, username):
-        profile_url = self.user_profile_url.format(username)
+    def get_solved_problems(self, username):
+        profile_url = self.user_profile_url.format(user=username)
         print 'Crawling profile page from url = {}'.format(profile_url)
 
-        elements = self.get_element_by_selector(session, profile_url, 'a')
+        elements = self.get_element_by_selector(profile_url, 'a')
         if elements is None:
+            print 'No element found'
             return []
 
         problems_solved = []
         for element in elements:
             text = element.__str__().replace('\n', ' ')
-            pattern = self.status_regex.format(username)
+            pattern = self.status_regex.format(user=username)
             problem_re = re.compile(pattern).match(text)
 
             if problem_re:
@@ -54,17 +56,11 @@ class GenericCrawler:
 
         return problems_solved
 
-    def download_solution(self, session, output_dir, username, problem_code):
-        status_url = self.problem_status_url.format(username, problem_code)
+    def get_accepted_submission_id(self, username, problem_code):
+        status_url = self.problem_status_url.format(user=username, problem=problem_code)
         print 'Find submission ID from {}'.format(status_url)
 
-        request = session.get(status_url)
-        if request.status_code != 200:
-            print 'Unable to crawl page'
-            return 1
-
-        html = BeautifulSoup(request.text.replace('kol1', 'kol'))
-        elements = html.select('tr[class="kol"]')
+        elements = self.get_element_by_selector(status_url, 'tr')
         for element in elements:
             text = element.__str__().replace('\n', ' ')
             if self.is_accepted(text) is None:
@@ -83,8 +79,14 @@ class GenericCrawler:
                 extension = 'py'
 
             if match_pattern:
-                submission_id = match_pattern.groupdict()['id']
-                code_url = self.code_url.format(submission_id)
-                request = session.get(code_url)
-                self.store_code(output_dir, problem_code, extension, request.text)
-                break
+                return match_pattern.groupdict()['id'], extension
+
+        return None, None
+
+    def download_solution(self, output_dir, username, problem_code):
+        submission_id, extension = self.get_accepted_submission_id(self.session, username, problem_code)
+
+        if submission_id is not None:
+            code_url = self.code_url.format(id=submission_id)
+            request = self.session.get(code_url)
+            self.store_code(output_dir, problem_code, extension, request.text)

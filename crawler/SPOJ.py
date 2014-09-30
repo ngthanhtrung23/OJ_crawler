@@ -1,22 +1,22 @@
 import os
 from generic_crawler import GenericCrawler
-from VOJ import main
+from VOJ import main, VojCrawler
 
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../code/SPOJ')
 BASE_URL = 'https://www.spoj.com/'
 
 
-class SpojCrawler(object, GenericCrawler):
+class SpojCrawler(VojCrawler):
     def __init__(self):
         GenericCrawler.__init__(
             self,
             BASE_URL,
-            BASE_URL + 'users/{}/',
-            BASE_URL + 'status/{},{}/',
-            BASE_URL + 'files/src/save/{}',
-            '<a href="/status/[^,]+,{}/">(?P<id>.+)</a>',
-            '.*(Đạt yêu cầu|Accepted|100)',
+            BASE_URL + 'users/{user}/',
+            BASE_URL + 'status/{problem},{user}/',
+            BASE_URL + 'files/src/save/{id}',
+            '<a href="/status/[^,]+,{user}/">(?P<id>.+)</a>',
+            '<tr class="kol.*(accepted|100)',
             '.*href="/files/src/(?P<id>\d+)/'
         )
 
