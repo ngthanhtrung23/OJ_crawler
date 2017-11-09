@@ -49,7 +49,7 @@ def main(crawler, output_dir):
     print '{} has solved {} problems'.format(username, len(problems))
 
     for problem in problems:
-        for extension in ['java', 'cpp', 'py', 'pas']:
+        for extension in ['java', 'cpp', 'py', 'pas', 'txt']:
             if os.path.isfile(os.path.join(output_dir, problem + '.' + extension)):
                 break
         else:

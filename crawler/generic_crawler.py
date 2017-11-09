@@ -75,6 +75,8 @@ class GenericCrawler(object):
                 extension = 'java'
             elif text.find('C++') >= 0:
                 extension = 'cpp'
+            elif text.find('CPP') >= 0:
+                extension = 'cpp'
             elif text.find('PAS') >= 0:
                 extension = 'pas'
             elif text.find('PYTH') >= 0:
