@@ -7,7 +7,7 @@ from generic_crawler import GenericCrawler
 
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../code/VOJ')
-BASE_URL = 'https://vn.spoj.com/'
+BASE_URL = 'http://vn.spoj.com/'
 
 
 class VojCrawler(GenericCrawler):
