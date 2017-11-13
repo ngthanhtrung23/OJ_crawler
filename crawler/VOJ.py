@@ -6,7 +6,7 @@ import requests
 from generic_crawler import GenericCrawler
 
 
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../code/VOJ')
+OUTPUT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BASE_URL = 'http://vn.spoj.com/'
 
 
@@ -39,6 +39,8 @@ def main(crawler, output_dir):
     else:
         username = raw_input('Your username: ')
         password = raw_input('Your password: ')
+
+    output_dir = os.path.join(output_dir, username, 'VOJ')
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
