@@ -1,35 +1,14 @@
-# -*- coding: utf-8 -*-
-
+import csv
+import re
 import os
 import sys
-import requests
-from generic_crawler import GenericCrawler
+from io import StringIO
+from tqdm import tqdm
+from SPOJCrawler import SPOJCrawler
 
-
-OUTPUT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-BASE_URL = 'http://vn.spoj.com/'
-
-
-class VojCrawler(GenericCrawler):
-    def __init__(self):
-        GenericCrawler.__init__(
-            self,
-            BASE_URL,
-            BASE_URL + 'users/{user}/',
-            BASE_URL + 'status/{problem},{user}/',
-            BASE_URL + 'files/src/save/{id}',
-            '<a href="/status/[^,]+,{user}/">(?P<id>.+)</a>',
-            '<tr class="kol.*(Đạt yêu cầu|accepted|100)',
-            '.*href="/files/src/(?P<id>\d+)/'
-        )
-
-    def login(self, username, password):
-        super(VojCrawler, self)._login(data={
-            'login_user': username,
-            'password': password
-        })
-
-
+BASE_URL = 'https://vn.spoj.com/'
+all_submitted_code = 0
+accepted_code_only = 1
 def main(crawler, output_dir):
     if len(sys.argv) >= 3:
         username = sys.argv[1]
@@ -37,27 +16,42 @@ def main(crawler, output_dir):
         if len(sys.argv) >= 4:
             output_dir = sys.argv[3]
     else:
-        username = raw_input('Your username: ')
-        password = raw_input('Your password: ')
+        username = input('Your username: ')
+        password = input('Your password: ')
+
+    crawler._login(username, password)
 
     output_dir = os.path.join(output_dir, username, 'VOJ')
-
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    
+    type_get = all_submitted_code
+    if sys.argv[-1] == "AC_only":
+        type_get = accepted_code_only
+    
+    solved_list = crawler.get_solved_list(username)
 
-    crawler.login(username, password)
-
-    problems = crawler.get_solved_problems(username)
-    print '{} has solved {} problems'.format(username, len(problems))
-
-    for problem in problems:
-        for extension in ['java', 'cpp', 'py', 'pas', 'txt']:
-            if os.path.isfile(os.path.join(output_dir, problem + '.' + extension)):
-                break
+    
+    #|   ID    |        DATE         |  PROBLEM  |  RESULT   | TIME  |  MEM   | LNG |
+    csv_reader = csv.reader(StringIO(solved_list), delimiter = '|')
+    submission_count = solved_list.count('\n') 
+    for i in tqdm(range(submission_count)):
+        row = next(csv_reader)[1 : -1]
+        if (row == None):
+            continue
+        row = list(map(str.strip, row))
+        if (type_get == accepted_code_only):
+            result = row[3]
+            if re.match('(AC|100)', result) == None:
+                continue
+            file_name = row[2]
         else:
-            crawler.download_solution(output_dir, username, problem)
-
+            #full information
+            file_name = "{2}[{0}][RESULT_{3}][TIME_{4}][MEM_{5}][{1}]".format(row[0], row[1].replace(' ', '_').replace(':','-'), row[2], row[3], row[4], row[5], row[5])
+        crawler.download_solution(os.path.join(output_dir, file_name), username, row[0], row[6])
 
 if __name__ == '__main__':
-    crawler = VojCrawler()
-    main(crawler, OUTPUT_DIR)
+    crawler = SPOJCrawler(BASE_URL,
+                BASE_URL + 'files/src/save/{id}')
+    output_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    main(crawler, output_dir = output_dir)
