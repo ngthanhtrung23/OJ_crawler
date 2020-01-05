@@ -39,7 +39,7 @@ class SPOJCrawler(object):
             extension = 'cpp'
         elif extension == 'PAS':
             extension = 'pas'
-        elif extension == 'PYTH':
+        elif extension == 'PYT':
             extension = 'py'
         else:
             extension = 'txt'
