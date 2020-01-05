@@ -1,7 +1,7 @@
-OJ_crawler
+VOJ_crawler
 ==========
 
-Crawler for getting my solutions from Online Judges
+Crawler for getting my solutions from Vietnam Online Judge
 
 Installation:
 
@@ -10,23 +10,17 @@ pip install -r requirements.txt
 ```
 
 
-Currently supports following Online Judges:
+- [VOJ](https://vn.spoj.com/):
 
-- [VOJ](http://vn.spoj.com/):
-
-    ```
+   This command will get all your submissions:
+   ```
     python crawler/VOJ.py <username> <password>
-    ```
-
-- [SPOJ](http://www.spoj.com/):
-
-    ```
-    python crawler/SPOJ.py <username> <password>
-    ```
-
-- [Timus](http://acm.timus.ru/):
-
-    ```
-    python crawler/timus.py <userid> <password> <2 character code of userid>
-    ```
-
+   ```
+   If you want to get accepted submssions only, please try this command:
+   ```
+    python crawler/VOJ.py <username> <password> AC_only
+   ```
+ 
+ 
+Beaware ofredirected problem, when you enter http://vn.spoj.com/, it will redirected to http://www.spoj.com/ sometime. **If my code get redirected to spoj, it would crawl your submission in SPOJ**
+   
