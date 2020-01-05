@@ -21,5 +21,5 @@ If you want to get accepted submssions only, please try this command:
    ```
 
  
-Beware of redirected problem, when you enter http://vn.spoj.com/, it will redirected to http://www.spoj.com/ sometime. **If my code get redirected to spoj, it would crawl your submission in SPOJ**
+Beware of redirected problem, when you enter http://vn.spoj.com/, it maybe redirect to http://www.spoj.com/ sometime. **If my code get redirected to spoj, it would crawl your submission in SPOJ**
    
