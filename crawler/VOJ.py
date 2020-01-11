@@ -39,22 +39,31 @@ def main(crawler, output_dir):
     
     #|   ID    |        DATE         |  PROBLEM  |  RESULT   | TIME  |  MEM   | LNG |
     csv_reader = csv.reader(StringIO(solved_list), delimiter = '|')
-    
-    for i in tqdm(range(submission_count)):
+    tBar = tqdm(range(submission_count))
+    for i in tBar:
         row = next(csv_reader)[1 : -1]
         if (row == None):
             continue
         row = list(map(str.strip, row))
+        
+        result = row[3]
+        is_AC = (re.match('(AC|100)', result) != None)
+        if is_AC:
+            accepted_submission_count += 1
+            
         if (type_get == accepted_code_only):
-            result = row[3]
-            if re.match('(AC|100)', result) == None:
+            if not is_AC:
                 continue
             file_name = row[2]
-            accepted_submission_count += 1
         else:
             #full information
+            if row[3].find('?') != -1:
+                row[3] = 'NULL'
             file_name = "{2}[{0}][RESULT_{3}][TIME_{4}][MEM_{5}][{1}]".format(row[0], row[1].replace(' ', '_').replace(':','-'), row[2], row[3], row[4], row[5], row[5])
+            
+            
         crawler.download_solution(os.path.join(output_dir, file_name), username, row[0], row[6])
+        tBar.set_description("Accepted submissions found: " + str(accepted_submission_count))
     print("You have", accepted_submission_count, "accepted submissions")
 if __name__ == '__main__':
     crawler = SPOJCrawler(BASE_URL,
