@@ -57,6 +57,8 @@ def main(crawler, output_dir):
             file_name = row[2]
         else:
             #full information
+            if row[3].find('?') != -1:
+                row[3] = 'NULL'
             file_name = "{2}[{0}][RESULT_{3}][TIME_{4}][MEM_{5}][{1}]".format(row[0], row[1].replace(' ', '_').replace(':','-'), row[2], row[3], row[4], row[5], row[5])
             
             
